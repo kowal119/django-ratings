@@ -13,17 +13,15 @@ register = template.Library()
 
 class RatingByRequestNode(template.Node):
     def __init__(self, request, obj, context_var):
-        self.request = request
+        self.request = template.Variable(request)
         self.obj, self.field_name = obj.split('.')
         self.context_var = context_var
+
     
     def render(self, context):
-        try:
-            request = template.resolve_variable(self.request, context)
-            obj = template.resolve_variable(self.obj, context)
-            field = getattr(obj, self.field_name)
-        except (template.VariableDoesNotExist, AttributeError):
-            return ''
+        request = self.request.resolve(context)
+        object = context.get(self.obj)
+        field = getattr(object, self.field_name)
         try:
             vote = field.get_rating_for_user(request.user, request.META['REMOTE_ADDR'], request.COOKIES)
             context[self.context_var] = vote
@@ -41,7 +39,7 @@ def do_rating_by_request(parser, token):
     
         {% rating_by_request request on instance as vote %}
     """
-    
+
     bits = token.contents.split()
     if len(bits) != 6:
         raise template.TemplateSyntaxError("'%s' tag takes exactly five arguments" % bits[0])

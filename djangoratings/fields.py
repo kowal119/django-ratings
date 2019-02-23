@@ -5,9 +5,9 @@ import forms
 import itertools
 from datetime import datetime
 
-from models import Vote, Score
-from default_settings import RATINGS_VOTES_PER_IP
-from exceptions import *
+from .models import Vote, Score
+from .default_settings import RATINGS_VOTES_PER_IP
+from .exceptions import *
 
 if 'django.contrib.contenttypes' not in settings.INSTALLED_APPS:
     raise ImportError("djangoratings requires django.contrib.contenttypes in your INSTALLED_APPS")
@@ -16,10 +16,7 @@ from django.contrib.contenttypes.models import ContentType
 
 __all__ = ('Rating', 'RatingField', 'AnonymousRatingField')
 
-try:
-    from hashlib import md5
-except ImportError:
-    from md5 import new as md5
+from hashlib import md5
 
 try:
     from django.utils.timezone import now
@@ -27,7 +24,7 @@ except ImportError:
     now = datetime.now
 
 def md5_hexdigest(value):
-    return md5(value).hexdigest()
+    return md5(value.encode()).hexdigest()
 
 class Rating(object):
     def __init__(self, score, votes):
